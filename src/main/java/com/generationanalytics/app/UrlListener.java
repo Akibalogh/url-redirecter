@@ -27,26 +27,27 @@ public class UrlListener extends HttpServlet {
 
 	// Look up code to get corresponding object
 	BasicDBObject query = new BasicDBObject("c", code);
-	DBCursor cursor = source.find();
+	DBCursor cursor = source.find(query);
 	
 	// Throw exception if there are multiple matches or if there are no matches
 	// TODO: If there are 0 matches, handle error differently
-	if (source.getCount() > 1)
+	if (cursor.count() > 1)
 	{ throw new MongoException("Multiple article matches for one URL"); }
 	DBObject result = cursor.next();
 	cursor.close();
 		
 	// Use the code to get the item URL and articleId
 	JSONObject item = new JSONObject(JSON.serialize(result));
-	String articleId = item.getString("aid"); 
-	
+	String[] parts = item.getString("_id").split("\"");
+	String articleId = parts[3];
+
 	// Create a new click object to record the user's click
 	BasicDBObject click = new BasicDBObject("uid", userId).	
 		append("aid", articleId).
 		append("ct", dateFormat.format(curDate));
 
 	// Redirect to the URL
-	response.sendRedirect(item.getString("url"));
+	response.sendRedirect(response.encodeRedirectURL(item.getString("url")));
 
 	return click;
     }
@@ -61,18 +62,19 @@ public class UrlListener extends HttpServlet {
 
 	// Look up code to get corresponding object
 	BasicDBObject query = new BasicDBObject("c", code);
-	DBCursor cursor = source.find();
+	DBCursor cursor = source.find(query);
 	
 	// Throw exception if there are multiple matches or if there are no matches
 	// TODO: If there are 0 matches, handle error differently
-	if (source.getCount() > 1)
+	if (cursor.count() > 1)
 	{ throw new MongoException("Multiple webpage matches for one URL"); }
 	DBObject result = cursor.next();
 	cursor.close();
 		
 	// Use the code to get the item URL and webpageId
 	JSONObject item = new JSONObject(JSON.serialize(result));
-	String webpageId = item.getString("wid"); 
+	String[] parts = item.getString("_id").split("\"");
+	String webpageId = parts[3];
 	
 	// Create a new click object to record the user's click
 	BasicDBObject click = new BasicDBObject("uid", userId).	
@@ -80,7 +82,7 @@ public class UrlListener extends HttpServlet {
 		append("ct", dateFormat.format(curDate));
 
 	// Redirect to the URL
-	response.sendRedirect(item.getString("url"));
+	response.sendRedirect(response.encodeRedirectURL(item.getString("url")));
 
 	return click;
     }
@@ -99,7 +101,7 @@ public class UrlListener extends HttpServlet {
 		append("ct", dateFormat.format(curDate));
 
 	// Redirect to the URL
-	response.sendRedirect(codeAsUrl);
+	response.sendRedirect(response.encodeRedirectURL(codeAsUrl));
 
 	return click;
     }
@@ -107,8 +109,6 @@ public class UrlListener extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException
     {
-	String url = request.getParameter("url"); // TODO: Remove this url once code is working
-	/*
  	String code = request.getParameter("code");
 	String content_type = request.getParameter("content");
 	String userId = request.getParameter("uid");
@@ -118,16 +118,19 @@ public class UrlListener extends HttpServlet {
 	{
 		MongoClient mongoClient = new MongoClient();
 		DB db = mongoClient.getDB("db");	
-		DBCollection clickTracker = mongoClient.getDB("user_clicks");
+		DBCollection clickTracker = db.getCollection("user_clicks");
 
-		if (content_type == "a")
+		if (content_type.equals("a"))
 		{ click = clickFromArticle(code, userId, db, response); }
-		else if (content_type == "w")
+		else if (content_type.equals("w"))
 		{ click = clickFromWebpage(code, userId, db, response); }
-		else if (content_type == "d")
+		else if (content_type.equals("d"))
 		{ click = clickFromAd(code, userId, db, response); }
 		else
-		{ throw ServletException("Unknown content_type passed"); }
+		{
+			System.out.println("ERROR: Bad content type " + content_type);
+			throw new ServletException();
+		}
 		
 		clickTracker.insert(click);
 		
@@ -144,10 +147,9 @@ public class UrlListener extends HttpServlet {
 	catch (IOException e)
 	{ 
 		e.printStackTrace();
-		response.sendRedirect("http://www.biffle.co")
+		response.sendRedirect(response.encodeRedirectURL("http://www.biffle.co"));
 	}
- 	*/
-	
+
     }
 }
 

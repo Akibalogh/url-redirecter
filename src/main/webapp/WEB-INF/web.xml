@@ -5,14 +5,16 @@
  "http://java.sun.com/dtd/web-app_2_3.dtd" >
 
 <web-app>
-	<servlet>
-		<servlet-name>UrlListener</servlet-name>
-		<servlet-class>com.generationanalytics.app.UrlListener</servlet-class>
-	</servlet>
+  <servlet>
+	<servlet-name>UrlListener</servlet-name>
+	<servlet-class>com.generationanalytics.app.UrlListener</servlet-class>
+	<load-on-startup>2</load-on-startup>
+  </servlet>
 
-	<servlet-mapping>
-		<servlet-name>UrlListener</servlet-name>
-		<url-pattern>/servlet/UrlListener</url-pattern>
-	</servlet-mapping>
+  <servlet-mapping>
+	<servlet-name>UrlListener</servlet-name>
+	<url-pattern>/redirect</url-pattern>
+  </servlet-mapping>
+
 </web-app>
 
