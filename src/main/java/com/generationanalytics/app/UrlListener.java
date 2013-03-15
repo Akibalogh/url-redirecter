@@ -94,10 +94,10 @@ public class UrlListener extends HttpServlet {
 	Date curDate = new Date();
 
 	// TODO: Store ad objects in a collection?
-	
+
 	// Create a new click object to record the user's click
 	BasicDBObject click = new BasicDBObject("uid", userId).	
-		append("did", codeAsUrl).
+		append("ad_url", codeAsUrl).
 		append("ct", dateFormat.format(curDate));
 
 	// Redirect to the URL
